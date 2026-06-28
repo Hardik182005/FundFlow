@@ -94,9 +94,15 @@ try:
     _mangum = Mangum(app, lifespan="off")
 
     def handler(event, context):
+        import asyncio
+        try:
+            asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
         # Asynchronous self-invocation for long audits (beats the 30s gateway cap).
         if isinstance(event, dict) and event.get("_fundflow_task") == "run_audit":
-            import asyncio
             from services import fund_audit_service
             return asyncio.run(fund_audit_service.run_audit_task(event["audit_id"], event["payload"]))
         return _mangum(event, context)
