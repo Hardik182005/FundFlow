@@ -26,3 +26,8 @@
 *.log
 .DS_Store
 Thumbs.db
+
+# stray screenshots
+image.png
+image copy*.png
+*.mp4
