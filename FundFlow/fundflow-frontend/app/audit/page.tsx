@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AppShell from '@/components/app/AppShell'
-import { getFundSources, estimateAudit, runFundAudit } from '@/lib/api'
+import { getFundSources, estimateAudit, startAudit, getFundAudit } from '@/lib/api'
 import type { FundSource } from '@/lib/types'
 import { ShieldCheck, FileText, Loader2, Sparkles } from 'lucide-react'
 
@@ -51,8 +51,20 @@ export default function AuditPage() {
       const payload = useCustom
         ? { scheme_code: `custom-${Date.now()}`, fund_name: 'Custom audit', custom_sources: custom }
         : { scheme_code: selected!.scheme_code, fund_name: selected!.fund_name }
-      const result = await runFundAudit(payload)
-      router.push(`/audit/view?id=${result.audit_id}`)
+      // Start (non-blocking) then poll — live audits run async and beat the 30s gateway cap.
+      const { audit_id, status } = await startAudit(payload)
+      if (status === 'completed') { router.push(`/audit/view?id=${audit_id}`); return }
+      const deadline = Date.now() + 120000
+      while (Date.now() < deadline) {
+        await new Promise((r) => setTimeout(r, 3000))
+        try {
+          const a = await getFundAudit(audit_id)
+          if (a.status === 'completed' || a.status === 'failed' || (a.verdict && a.verdict !== 'RUNNING')) {
+            router.push(`/audit/view?id=${audit_id}`); return
+          }
+        } catch { /* keep polling */ }
+      }
+      router.push(`/audit/view?id=${audit_id}`)  // navigate anyway; page will show latest state
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The audit could not be completed.')
       setRunning(false)

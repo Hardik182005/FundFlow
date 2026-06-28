@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { ShieldCheck, TrendingUp, GitCompare, UserCheck, Layers, FileSearch, AudioLines, ArrowRight } from 'lucide-react'
 import PipelineFlow from '@/components/landing/PipelineFlow'
+import TickerBar from '@/components/landing/TickerBar'
 import FundFlowOrb from '@/components/app/FundFlowOrb'
 
 const FEATURES = [
@@ -19,7 +20,8 @@ const SOURCES = ['AMFI', 'Morningstar India', 'Economic Times', 'NSE', 'BSE', 'A
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 border-b border-cardBorder bg-white/80 backdrop-blur">
+      <TickerBar />
+      <header className="sticky top-[34px] z-40 border-b border-cardBorder bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent text-sm font-bold text-white">F</span>
@@ -35,20 +37,56 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute -left-40 -top-40 h-96 w-96 rounded-full bg-gradient-to-br from-black/[0.04] to-transparent blur-3xl" />
         <div className="pointer-events-none absolute -right-40 top-20 h-96 w-96 rounded-full bg-gradient-to-br from-black/[0.04] to-transparent blur-3xl" />
-        <div className="mx-auto max-w-4xl px-6 py-24 text-center animate-fade-in">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cardBorder bg-white px-3 py-1 text-xs font-medium text-textSecondary">
-            <span className="h-1.5 w-1.5 rounded-full bg-gain" /> Powered by Anakin Universal Scraper + Wire
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-20 lg:grid-cols-2">
+          <div className="animate-fade-in">
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cardBorder bg-white px-3 py-1 text-xs font-medium text-textSecondary">
+              <span className="h-1.5 w-1.5 rounded-full bg-gain" /> Powered by Anakin Universal Scraper + Wire
+            </div>
+            <h1 className="font-display text-5xl font-bold leading-[1.05] md:text-6xl">
+              Track your funds.<br />
+              <span className="bg-gradient-to-r from-accent via-textSecondary to-accent bg-[length:200%_auto] bg-clip-text text-transparent animate-[shimmer_4s_linear_infinite]">
+                Trust your funds.
+              </span>
+            </h1>
+            <p className="mt-6 max-w-xl text-lg text-textSecondary">
+              Your portfolio tells you what your mutual funds are worth. FundFlow Audit tells you whether
+              the manager is keeping their promises.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/dashboard" className="ff-btn-primary px-6 py-3">Open FundFlow</Link>
+              <Link href="/audit" className="ff-btn-ghost px-6 py-3">Audit a Fund</Link>
+            </div>
           </div>
-          <h1 className="font-display text-5xl font-bold leading-tight md:text-6xl">
-            Track your funds.<br />Trust your funds.
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-textSecondary">
-            Your portfolio tells you what your mutual funds are worth. FundFlow Audit tells you whether
-            the manager is keeping their promises.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/dashboard" className="ff-btn-primary px-6 py-3">Open FundFlow</Link>
-            <Link href="/audit" className="ff-btn-ghost px-6 py-3">Audit a Fund</Link>
+
+          {/* Floating audit preview card */}
+          <div className="relative animate-fade-in">
+            <div className="ff-card animate-[orb-pulse_6s_ease-in-out_infinite] p-6 shadow-[0_30px_80px_-24px_rgba(11,13,18,0.22)]">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="text-xs text-textFaint">FundFlow Audit · Mid Cap</div>
+                  <div className="font-display text-lg font-semibold leading-tight">HDFC Mid-Cap Opportunities</div>
+                </div>
+                <div className="text-right">
+                  <div className="font-mono-num text-3xl font-bold">58</div>
+                  <div className="rounded-full border border-warn/20 bg-warn/10 px-2 py-0.5 text-[10px] font-bold text-warn">REVIEW</div>
+                </div>
+              </div>
+              {/* sparkline */}
+              <svg viewBox="0 0 320 80" className="mt-4 w-full" preserveAspectRatio="none">
+                <polyline fill="none" stroke="#0B0D12" strokeWidth="2"
+                  points="0,60 40,52 80,56 120,40 160,44 200,28 240,32 280,18 320,22" />
+                <polyline fill="rgba(11,13,18,0.06)" stroke="none"
+                  points="0,60 40,52 80,56 120,40 160,44 200,28 240,32 280,18 320,22 320,80 0,80" />
+              </svg>
+              <div className="mt-4 space-y-2 text-sm">
+                <div className="flex items-center justify-between"><span className="text-textSecondary">Manager Said vs Did</span><span className="font-semibold text-loss">Mismatch</span></div>
+                <div className="flex items-center justify-between"><span className="text-textSecondary">Style Drift</span><span className="font-semibold text-warn">Warning</span></div>
+                <div className="flex items-center justify-between"><span className="text-textSecondary">Manager Continuity</span><span className="font-semibold text-gain">Stable</span></div>
+              </div>
+              <div className="mt-4 rounded-lg bg-background p-2 text-[11px] text-textFaint">
+                “Financials rose 28% → 34% despite an <span className="font-medium text-textSecondary">underweight</span> statement.”
+              </div>
+            </div>
           </div>
         </div>
 

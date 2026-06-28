@@ -27,6 +27,23 @@ async def run_audit(req: RunAuditRequest):
         raise HTTPException(status_code=500, detail="The audit could not be completed. Please try again.")
 
 
+@router.post("/start")
+async def start_audit(req: RunAuditRequest):
+    """Non-blocking start — returns an audit_id immediately (beats the 30s gateway
+    cap for fresh live audits). Poll GET /api/audit/{audit_id} until status is
+    'completed' or 'failed'. Supported demo funds return 'completed' right away."""
+    try:
+        res = audit_svc.start_audit(req)
+        if res.get("status") == "inline":  # no async runtime (local dev) -> run inline
+            return await audit_svc.run_audit(req, audit_id=res["audit_id"])
+        return res
+    except AuditError as e:
+        raise HTTPException(status_code=e.code, detail=str(e))
+    except Exception:
+        logger.exception("audit start failed")
+        raise HTTPException(status_code=500, detail="The audit could not be started. Please try again.")
+
+
 @router.get("/estimate/{scheme_code}")
 async def estimate(scheme_code: str, force_refresh: bool = False):
     fund = sources.get_fund(scheme_code)

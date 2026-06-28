@@ -90,6 +90,7 @@ export interface FundAuditResult {
   limitations: string[]
   disclaimer: string
   is_demo?: boolean
+  status?: string
   wire_reality?: { action_id: string; catalog: string } | null
 }
 

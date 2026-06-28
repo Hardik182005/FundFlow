@@ -60,6 +60,51 @@
         "share_class_slug": "f00000pdm3",
         "share_class_id": "F00000PDM3"
       }
+    },
+    "122639": {
+      "scheme_code": "122639", "fund_name": "Parag Parikh Flexi Cap Fund - Direct Plan - Growth", "amc": "PPFAS Mutual Fund",
+      "fund_type": "equity", "category": "Flexi Cap",
+      "factsheet_current_url": "https://www.morningstar.in/mutualfunds/f00000pzh2/parag-parikh-flexi-cap-direct-growth/fund-factsheet.aspx",
+      "factsheet_previous_url": "", "manager_commentary_url": "", "sid_url": "", "annual_report_url": "",
+      "manager_profile_url": "https://www.morningstar.in/mutualfunds/f00000pzh2/parag-parikh-flexi-cap-direct-growth/fund-overview.aspx", "nfo_document_url": null,
+      "morningstar": {"fund_id": "f00000pzh2", "fund_slug": "parag-parikh-flexi-cap-direct-growth", "share_class_slug": "f00000pzh2", "share_class_id": "F00000PZH2"}
+    },
+    "118778": {
+      "scheme_code": "118778", "fund_name": "Nippon India Small Cap Fund - Direct Plan - Growth", "amc": "Nippon India Mutual Fund",
+      "fund_type": "equity", "category": "Small Cap",
+      "factsheet_current_url": "https://www.morningstar.in/mutualfunds/f00000pd8f/nippon-india-small-cap-fund-direct-plan-growth-plan/fund-factsheet.aspx",
+      "factsheet_previous_url": "", "manager_commentary_url": "", "sid_url": "", "annual_report_url": "",
+      "manager_profile_url": "https://www.morningstar.in/mutualfunds/f00000pd8f/nippon-india-small-cap-fund-direct-plan-growth-plan/fund-overview.aspx", "nfo_document_url": null,
+      "morningstar": {"fund_id": "f00000pd8f", "fund_slug": "nippon-india-small-cap-fund-direct-plan-growth-plan", "share_class_slug": "f00000pd8f", "share_class_id": "F00000PD8F"}
+    },
+    "118834": {
+      "scheme_code": "118834", "fund_name": "Mirae Asset Large Cap Fund - Direct Plan - Growth", "amc": "Mirae Asset Mutual Fund",
+      "fund_type": "equity", "category": "Large Cap",
+      "factsheet_current_url": "https://www.morningstar.in/mutualfunds/f00000pd2h/mirae-asset-large-cap-fund-direct-plan-growth/fund-factsheet.aspx",
+      "factsheet_previous_url": "", "manager_commentary_url": "", "sid_url": "", "annual_report_url": "",
+      "manager_profile_url": "https://www.morningstar.in/mutualfunds/f00000pd2h/mirae-asset-large-cap-fund-direct-plan-growth/fund-overview.aspx", "nfo_document_url": null,
+      "morningstar": {"fund_id": "f00000pd2h", "fund_slug": "mirae-asset-large-cap-fund-direct-plan-growth", "share_class_slug": "f00000pd2h", "share_class_id": "F00000PD2H"}
+    },
+    "120468": {
+      "scheme_code": "120468", "fund_name": "Kotak Emerging Equity Fund - Direct Plan - Growth", "amc": "Kotak Mutual Fund",
+      "fund_type": "equity", "category": "Mid Cap",
+      "factsheet_current_url": "https://www.morningstar.in/mutualfunds/?q=kotak-emerging-equity-fund-direct-growth",
+      "factsheet_previous_url": "", "manager_commentary_url": "", "sid_url": "", "annual_report_url": "",
+      "manager_profile_url": "https://www.morningstar.in/mutualfunds/?q=kotak-emerging-equity-fund-direct-growth", "nfo_document_url": null
+    },
+    "119027": {
+      "scheme_code": "119027", "fund_name": "DSP Midcap Fund - Direct Plan - Growth", "amc": "DSP Mutual Fund",
+      "fund_type": "equity", "category": "Mid Cap",
+      "factsheet_current_url": "https://www.morningstar.in/mutualfunds/?q=dsp-midcap-fund-direct-growth",
+      "factsheet_previous_url": "", "manager_commentary_url": "", "sid_url": "", "annual_report_url": "",
+      "manager_profile_url": "https://www.morningstar.in/mutualfunds/?q=dsp-midcap-fund-direct-growth", "nfo_document_url": null
+    },
+    "120503": {
+      "scheme_code": "120503", "fund_name": "Axis ELSS Tax Saver Fund - Direct Plan - Growth", "amc": "Axis Mutual Fund",
+      "fund_type": "equity", "category": "ELSS",
+      "factsheet_current_url": "https://www.morningstar.in/mutualfunds/?q=axis-elss-tax-saver-fund-direct-growth",
+      "factsheet_previous_url": "", "manager_commentary_url": "", "sid_url": "", "annual_report_url": "",
+      "manager_profile_url": "https://www.morningstar.in/mutualfunds/?q=axis-elss-tax-saver-fund-direct-growth", "nfo_document_url": null
     }
   }
 }

@@ -12,6 +12,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import logging
+import os
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
@@ -156,19 +157,12 @@ async def _run_wire_reality(fund: Dict[str, Any], usage: Dict[str, Any], *,
             "job_id": res.job_id, "data": res.data}
 
 
-async def run_audit(req) -> Dict[str, Any]:
-    audit_id = "aud_" + uuid.uuid4().hex[:12]
+async def run_audit(req, audit_id: Optional[str] = None) -> Dict[str, Any]:
+    audit_id = audit_id or "aud_" + uuid.uuid4().hex[:12]
     user_id = req.user_id
     scheme_code = req.scheme_code
 
-    # Demo mode: for supported funds, return the rich evidence-linked demo audit
-    # (full Anakin Scraper + Wire pipeline showcase) unless a live refresh is forced.
     from services import demo_service
-    if demo_service.enabled() and not req.force_refresh and demo_service.is_supported(scheme_code):
-        demo = demo_service.build_demo_audit(scheme_code)
-        if demo:
-            _save_audit(demo, user_id)
-            return demo
 
     # idempotency: same user+scheme+sources within budget guard
     idem_key = hashlib.sha256(f"{user_id}:{scheme_code}:{req.audit_type}:{req.force_refresh}".encode()).hexdigest()[:24]
@@ -263,6 +257,23 @@ async def run_audit(req) -> Dict[str, Any]:
         universe = _comparison_universe()
         check_list.append(checks.check_nfo_clone(nfo, universe))
 
+    # ---- Hybrid fill: where LIVE data was too thin to score a check, fall back to the
+    # rich sample for supported funds (real Anakin evidence is kept; filled parts are flagged).
+    hybrid_filled = []
+    sample_claims_used = False
+    if demo_service.enabled() and demo_service.is_supported(scheme_code):
+        sample = demo_service.build_demo_audit(scheme_code) or {}
+        sample_checks = {c["check_id"]: c for c in sample.get("checks", [])}
+        for i, c in enumerate(check_list):
+            if c.get("status") == "insufficient_data" and c["check_id"] in sample_checks:
+                sc = dict(sample_checks[c["check_id"]])
+                sc["findings"] = list(sc.get("findings", [])) + ["(Supplemented from sample data — live documents lacked this field.)"]
+                check_list[i] = sc
+                hybrid_filled.append(c["check_id"])
+        if not results.get("claims") and sample.get("manager_claims"):
+            results["claims"] = sample["manager_claims"]
+            sample_claims_used = True
+
     trust_score, verdict = checks.compute_trust_score(check_list)
 
     # ---- Evidence ----
@@ -294,9 +305,19 @@ async def run_audit(req) -> Dict[str, Any]:
         })
 
     limitations = _limitations(doc_map, results, wire_result)
-    usage["estimated_credits"] = usage["fresh_calls"] + sum(
-        1 for _ in range(0))  # base
     usage["estimated_credits"] = usage["fresh_calls"] + (2 if wire_result else 0)
+
+    # Hybrid: add the sample evidence for any check we had to supplement, so the
+    # Evidence tab is complete. Real live-scraped evidence (with Anakin job IDs) is kept above.
+    if hybrid_filled or sample_claims_used:
+        have = {e.get("source_type") for e in evidence}
+        sample = demo_service.build_demo_audit(scheme_code) or {}
+        for e in sample.get("evidence", []):
+            if e.get("source_type") not in have:
+                evidence.append({**e, "title": e.get("title", "") + " (sample)"})
+        limitations.append(
+            "Hybrid audit: live Anakin scrape + Wire were executed (see Anakin job IDs); "
+            "checks lacking live document fields were supplemented from sample data and flagged.")
 
     verdict_expl = _verdict_explanation(verdict, trust_score, check_list)
 
@@ -308,13 +329,80 @@ async def run_audit(req) -> Dict[str, Any]:
         "manager_claims": results["claims"],
         "allocation_diff": sector_diff + holdings_diff,
         "anakin_usage": usage, "limitations": limitations,
-        "disclaimer": DISCLAIMER, "is_demo": False,
+        "disclaimer": DISCLAIMER, "is_demo": False, "status": "completed",
         "wire_reality": {"action_id": wire_result["action_id"], "catalog": wire_result["catalog"]} if wire_result else None,
     }
 
     _save_audit(audit, user_id)
     budget.idempotency_set(idem_key, audit_id)
     return audit
+
+
+# ----------------------- Async (beat the 30s API Gateway cap) -----------------------
+
+def start_audit(req) -> Dict[str, Any]:
+    """Kick off a LIVE audit without blocking the HTTP request.
+
+    Saves a 'running' placeholder, invokes this same Lambda asynchronously to do the
+    real (up to ~120s) Anakin scrape + Wire work, and returns an audit_id the frontend
+    polls via GET /api/audit/{id}. A recently-completed audit for the fund is returned
+    instantly (fast repeat).
+    """
+    audit_id = "aud_" + uuid.uuid4().hex[:12]
+
+    if not req.force_refresh:
+        prev = latest_for_fund(req.scheme_code, req.user_id)
+        if prev and prev.get("status") == "completed":
+            return {"audit_id": prev["audit_id"], "status": "completed"}
+
+    placeholder = {
+        "audit_id": audit_id, "scheme_code": req.scheme_code, "fund_name": req.fund_name,
+        "fund_type": "equity", "generated_at": _now(), "trust_score": 0, "verdict": "RUNNING",
+        "verdict_explanation": "Audit in progress — retrieving documents through Anakin…",
+        "checks": [], "evidence": [], "manager_claims": [], "allocation_diff": [],
+        "anakin_usage": {}, "limitations": [], "disclaimer": DISCLAIMER, "status": "running",
+    }
+    _save_audit(placeholder, req.user_id)
+
+    invoked = _invoke_self_async({"_fundflow_task": "run_audit", "audit_id": audit_id,
+                                  "payload": req.model_dump()})
+    if not invoked:
+        # No async path available (e.g. local) — fall back to inline so it still works.
+        return {"audit_id": audit_id, "status": "inline"}
+    return {"audit_id": audit_id, "status": "running"}
+
+
+def _invoke_self_async(event: Dict[str, Any]) -> bool:
+    fn = os.getenv("AWS_LAMBDA_FUNCTION_NAME")
+    if not fn:
+        return False
+    try:
+        import boto3, json as _json
+        boto3.client("lambda").invoke(FunctionName=fn, InvocationType="Event",
+                                      Payload=_json.dumps(event).encode("utf-8"))
+        return True
+    except Exception as e:
+        logger.warning(f"async self-invoke failed: {e}")
+        return False
+
+
+async def run_audit_task(audit_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    """Entry point for the asynchronous invocation — runs the real audit + saves it."""
+    from models.audit_schemas import RunAuditRequest
+    req = RunAuditRequest(**payload)
+    try:
+        return await run_audit(req, audit_id=audit_id)
+    except Exception as e:
+        logger.exception("async audit failed")
+        failed = {
+            "audit_id": audit_id, "scheme_code": req.scheme_code, "fund_name": req.fund_name,
+            "fund_type": "equity", "generated_at": _now(), "trust_score": 0, "verdict": "FAILED",
+            "verdict_explanation": "The audit could not be completed for this fund.",
+            "checks": [], "evidence": [], "manager_claims": [], "allocation_diff": [],
+            "anakin_usage": {}, "limitations": [str(e)[:200]], "disclaimer": DISCLAIMER, "status": "failed",
+        }
+        _save_audit(failed, req.user_id)
+        return failed
 
 
 def _comparison_universe() -> List[Dict[str, Any]]:

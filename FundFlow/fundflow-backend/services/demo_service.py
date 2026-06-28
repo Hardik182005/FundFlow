@@ -36,6 +36,18 @@ SUPPORTED: Dict[str, Dict[str, str]] = {
                "category": "Large Cap", "ms": "f00000pdc9", "slug": "sbi-bluechip-fund-direct-growth"},
     "120465": {"fund_name": "Axis Bluechip Fund - Direct Plan - Growth", "amc": "Axis Mutual Fund",
                "category": "Large Cap", "ms": "f00000pdm3", "slug": "axis-bluechip-fund-dir-gr"},
+    "122639": {"fund_name": "Parag Parikh Flexi Cap Fund - Direct Plan - Growth", "amc": "PPFAS Mutual Fund",
+               "category": "Flexi Cap", "ms": "f00000pzh2", "slug": "parag-parikh-flexi-cap-direct-growth"},
+    "118778": {"fund_name": "Nippon India Small Cap Fund - Direct Plan - Growth", "amc": "Nippon India Mutual Fund",
+               "category": "Small Cap", "ms": "f00000pd8f", "slug": "nippon-india-small-cap-fund-direct-plan-growth-plan"},
+    "118834": {"fund_name": "Mirae Asset Large Cap Fund - Direct Plan - Growth", "amc": "Mirae Asset Mutual Fund",
+               "category": "Large Cap", "ms": "f00000pd2h", "slug": "mirae-asset-large-cap-fund-direct-plan-growth"},
+    "120468": {"fund_name": "Kotak Emerging Equity Fund - Direct Plan - Growth", "amc": "Kotak Mutual Fund",
+               "category": "Mid Cap", "ms": "", "slug": "kotak-emerging-equity-fund-direct-growth"},
+    "119027": {"fund_name": "DSP Midcap Fund - Direct Plan - Growth", "amc": "DSP Mutual Fund",
+               "category": "Mid Cap", "ms": "", "slug": "dsp-midcap-fund-direct-growth"},
+    "120503": {"fund_name": "Axis ELSS Tax Saver Fund - Direct Plan - Growth", "amc": "Axis Mutual Fund",
+               "category": "ELSS", "ms": "", "slug": "axis-elss-tax-saver-fund-direct-growth"},
 }
 
 # Per-fund sector story (current vs previous) — illustrative cached values.
@@ -54,6 +66,36 @@ _SECTORS: Dict[str, List[Dict[str, Any]]] = {
         {"name": "Financials", "prev": 30.0, "cur": 24.5, "claim": "underweight", "quote": "We stay underweight financials."},
         {"name": "Healthcare", "prev": 7.0, "cur": 9.2, "claim": "increase", "quote": "We are increasing healthcare exposure."},
         {"name": "Consumer", "prev": 12.0, "cur": 12.4, "claim": "maintain", "quote": "We maintain our consumer positioning."},
+    ],
+    "122639": [  # mostly consistent -> trusted
+        {"name": "Financials", "prev": 22.0, "cur": 24.5, "claim": "increase", "quote": "We are adding to financials."},
+        {"name": "Technology", "prev": 18.0, "cur": 16.2, "claim": "decrease", "quote": "We have trimmed technology."},
+        {"name": "Consumer", "prev": 10.0, "cur": 11.5, "claim": "increase", "quote": "We continue adding consumer names."},
+    ],
+    "118778": [  # multiple mismatches -> high concern
+        {"name": "Industrials", "prev": 16.0, "cur": 22.0, "claim": "decrease", "quote": "We are reducing industrials."},
+        {"name": "Financials", "prev": 14.0, "cur": 11.0, "claim": "increase", "quote": "We are adding financials."},
+        {"name": "Materials", "prev": 9.0, "cur": 14.0, "claim": "underweight", "quote": "We remain underweight materials."},
+    ],
+    "118834": [  # consistent -> trusted
+        {"name": "Financials", "prev": 33.0, "cur": 31.5, "claim": "decrease", "quote": "We have lightened financials."},
+        {"name": "Information Technology", "prev": 12.0, "cur": 14.2, "claim": "increase", "quote": "We are adding IT."},
+        {"name": "Energy", "prev": 8.0, "cur": 7.8, "claim": "maintain", "quote": "We hold energy steady."},
+    ],
+    "120468": [  # one mismatch -> review
+        {"name": "Capital Goods", "prev": 18.0, "cur": 21.0, "claim": "maintain", "quote": "We keep capital goods steady."},
+        {"name": "Financials", "prev": 20.0, "cur": 15.5, "claim": "increase", "quote": "We are increasing financials."},
+        {"name": "Consumer", "prev": 11.0, "cur": 12.6, "claim": "increase", "quote": "We are adding consumer."},
+    ],
+    "119027": [  # consistent -> monitor/trusted
+        {"name": "Healthcare", "prev": 10.0, "cur": 12.5, "claim": "increase", "quote": "We are increasing healthcare."},
+        {"name": "Financials", "prev": 24.0, "cur": 22.4, "claim": "decrease", "quote": "We have reduced financials."},
+        {"name": "Auto", "prev": 7.0, "cur": 7.2, "claim": "maintain", "quote": "We maintain auto exposure."},
+    ],
+    "120503": [  # mismatch -> review
+        {"name": "Financials", "prev": 26.0, "cur": 31.0, "claim": "underweight", "quote": "We remain underweight financials."},
+        {"name": "Technology", "prev": 15.0, "cur": 13.0, "claim": "decrease", "quote": "We have trimmed technology."},
+        {"name": "Consumer", "prev": 12.0, "cur": 13.4, "claim": "increase", "quote": "We are adding consumer."},
     ],
 }
 
@@ -79,7 +121,9 @@ def is_supported(scheme_code: str) -> bool:
 
 
 def _url(meta: Dict[str, str], page: str) -> str:
-    return f"https://www.morningstar.in/mutualfunds/{meta['ms']}/{meta['slug']}/{page}.aspx"
+    if meta.get("ms"):
+        return f"https://www.morningstar.in/mutualfunds/{meta['ms']}/{meta['slug']}/{page}.aspx"
+    return f"https://www.morningstar.in/mutualfunds/?q={meta.get('slug', '')}"
 
 
 def build_demo_audit(scheme_code: str) -> Optional[Dict[str, Any]]:

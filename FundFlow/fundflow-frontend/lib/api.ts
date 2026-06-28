@@ -133,6 +133,20 @@ export async function runFundAudit(payload: RunAuditPayload): Promise<FundAuditR
   return res.json()
 }
 
+// Start a (possibly long, live) audit without blocking; returns an audit_id to poll.
+export async function startAudit(payload: RunAuditPayload): Promise<{ audit_id: string; status: string }> {
+  const res = await fetch(`${API_BASE}/api/audit/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id: 'demo-user', audit_type: 'full', force_refresh: false, ...payload }),
+  })
+  if (!res.ok) {
+    const detail = await res.json().catch(() => ({}))
+    throw new Error((detail as { detail?: string }).detail || 'The audit could not be started.')
+  }
+  return res.json()
+}
+
 export async function getFundAudit(auditId: string): Promise<FundAuditResult> {
   const res = await fetch(`${API_BASE}/api/audit/${auditId}`)
   if (!res.ok) throw new Error('Audit not found.')

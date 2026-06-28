@@ -88,9 +88,17 @@ async def dependency_health():
     }
 
 
-# AWS Lambda entrypoint (container image + Function URL). Harmless when unused.
+# AWS Lambda entrypoint (container image + API Gateway). Harmless when unused.
 try:
     from mangum import Mangum
-    handler = Mangum(app, lifespan="off")
+    _mangum = Mangum(app, lifespan="off")
+
+    def handler(event, context):
+        # Asynchronous self-invocation for long audits (beats the 30s gateway cap).
+        if isinstance(event, dict) and event.get("_fundflow_task") == "run_audit":
+            import asyncio
+            from services import fund_audit_service
+            return asyncio.run(fund_audit_service.run_audit_task(event["audit_id"], event["payload"]))
+        return _mangum(event, context)
 except ImportError:  # mangum not installed in local dev
     handler = None
