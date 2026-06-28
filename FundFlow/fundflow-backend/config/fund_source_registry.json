@@ -1,0 +1,65 @@
+{
+  "_comment": "Verified source registry for FundFlow Audit demo funds. URLs point to real Morningstar India fund pages discovered via Anakin Search. AMFI scheme codes link to the existing NAV pipeline. Morningstar fund identifiers feed the Anakin Wire morningstar-in actions. Edit via the Settings > Fund Sources developer UI or PUT /api/sources/funds/{scheme_code}. Never invent URLs.",
+  "funds": {
+    "118989": {
+      "scheme_code": "118989",
+      "fund_name": "HDFC Mid-Cap Opportunities Fund - Direct Plan - Growth",
+      "amc": "HDFC Mutual Fund",
+      "fund_type": "equity",
+      "category": "Mid Cap",
+      "factsheet_current_url": "https://www.morningstar.in/mutualfunds/f00000pe16/hdfc-mid-cap-opportunities-fund--direct-plan-growth-option/fund-factsheet.aspx",
+      "factsheet_previous_url": "",
+      "manager_commentary_url": "",
+      "sid_url": "",
+      "annual_report_url": "",
+      "manager_profile_url": "https://www.morningstar.in/mutualfunds/f00000pe16/hdfc-mid-cap-opportunities-fund--direct-plan-growth-option/fund-overview.aspx",
+      "nfo_document_url": null,
+      "morningstar": {
+        "fund_id": "f00000pe16",
+        "fund_slug": "hdfc-mid-cap-opportunities-fund--direct-plan-growth-option",
+        "share_class_slug": "f00000pe16",
+        "share_class_id": "F00000PE16"
+      }
+    },
+    "119598": {
+      "scheme_code": "119598",
+      "fund_name": "SBI Bluechip Fund - Direct Plan - Growth",
+      "amc": "SBI Mutual Fund",
+      "fund_type": "equity",
+      "category": "Large Cap",
+      "factsheet_current_url": "https://www.morningstar.in/mutualfunds/f00000pdc9/sbi-bluechip-fund-direct-growth/fund-factsheet.aspx",
+      "factsheet_previous_url": "",
+      "manager_commentary_url": "",
+      "sid_url": "",
+      "annual_report_url": "",
+      "manager_profile_url": "https://www.morningstar.in/mutualfunds/f00000pdc9/sbi-bluechip-fund-direct-growth/fund-overview.aspx",
+      "nfo_document_url": null,
+      "morningstar": {
+        "fund_id": "f00000pdc9",
+        "fund_slug": "sbi-bluechip-fund-direct-growth",
+        "share_class_slug": "f00000pdc9",
+        "share_class_id": "F00000PDC9"
+      }
+    },
+    "120465": {
+      "scheme_code": "120465",
+      "fund_name": "Axis Bluechip Fund - Direct Plan - Growth",
+      "amc": "Axis Mutual Fund",
+      "fund_type": "equity",
+      "category": "Large Cap",
+      "factsheet_current_url": "https://www.morningstar.in/mutualfunds/f00000pdm3/axis-bluechip-fund-dir-gr/fund-factsheet.aspx",
+      "factsheet_previous_url": "",
+      "manager_commentary_url": "",
+      "sid_url": "",
+      "annual_report_url": "",
+      "manager_profile_url": "https://www.morningstar.in/mutualfunds/f00000pdm3/axis-bluechip-fund-dir-gr/fund-overview.aspx",
+      "nfo_document_url": null,
+      "morningstar": {
+        "fund_id": "f00000pdm3",
+        "fund_slug": "axis-bluechip-fund-dir-gr",
+        "share_class_slug": "f00000pdm3",
+        "share_class_id": "F00000PDM3"
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "user_id": "demo-user",
+  "label": "Demo portfolio (cached fixture data)",
+  "holdings": [
+    {"scheme_code": "118989", "fund_name": "HDFC Mid-Cap Opportunities Fund - Direct Plan - Growth", "units": 1250.45, "buy_nav": 92.30, "current_nav": 168.42, "amc": "HDFC Mutual Fund"},
+    {"scheme_code": "119598", "fund_name": "SBI Bluechip Fund - Direct Plan - Growth", "units": 2100.00, "buy_nav": 48.10, "current_nav": 92.55, "amc": "SBI Mutual Fund"},
+    {"scheme_code": "120465", "fund_name": "Axis Bluechip Fund - Direct Plan - Growth", "units": 1800.20, "buy_nav": 35.20, "current_nav": 61.18, "amc": "Axis Mutual Fund"}
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "_comment": "Real Anakin Wire actions discovered via wire_discover on the live Anakin MCP. These are NOT fabricated. The discovery endpoint (POST /api/anakin/discover-wire-actions) refreshes them from the live catalog and persists to Firestore wire_action_registry/{logical_action_name}. Environment WIRE_ACTION_* overrides take precedence.",
+  "logical_actions": {
+    "fund_profile": {
+      "action_id": "act_morningstar_in_mutual_fund_detail_ssr",
+      "catalog": "morningstar-in",
+      "name": "Morningstar India mutual fund detail",
+      "credits_per_call": 2,
+      "params_required": ["share_class_slug", "fund_slug", "share_class_id"],
+      "params_optional": []
+    },
+    "fund_holdings": {
+      "action_id": "act_morningstar_in_mutual_fund_portfolio_ssr",
+      "catalog": "morningstar-in",
+      "name": "Morningstar India mutual fund portfolio / holdings",
+      "credits_per_call": 2,
+      "params_required": ["share_class_slug", "fund_slug"],
+      "params_optional": []
+    },
+    "fund_manager_news": {
+      "action_id": "et_mutual_funds",
+      "catalog": "economic_times",
+      "name": "Economic Times mutual funds news",
+      "credits_per_call": 1,
+      "params_required": [],
+      "params_optional": []
+    },
+    "nfo_news": {
+      "action_id": "et_mutual_funds",
+      "catalog": "economic_times",
+      "name": "Economic Times mutual funds news",
+      "credits_per_call": 1,
+      "params_required": [],
+      "params_optional": []
+    },
+    "security_market_cap": {
+      "action_id": "bse_quote",
+      "catalog": "bse",
+      "name": "BSE quote (market cap / price)",
+      "credits_per_call": 2,
+      "params_required": ["scripcode"],
+      "params_optional": []
+    },
+    "security_profile": {
+      "action_id": "nse_52week_highlow",
+      "catalog": "nse_india",
+      "name": "NSE 52-week high/low",
+      "credits_per_call": 1,
+      "params_required": [],
+      "params_optional": ["type"]
+    }
+  }
+}

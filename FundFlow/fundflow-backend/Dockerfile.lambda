@@ -1,0 +1,12 @@
+# AWS Lambda container image for the FundFlow API (FastAPI via Mangum).
+# Exposed through a Lambda Function URL (HTTPS). Build target alternative to the
+# plain Dockerfile used for App Runner / ECS / EB.
+FROM public.ecr.aws/lambda/python:3.11
+
+COPY requirements.txt ${LAMBDA_TASK_ROOT}/
+RUN pip install --no-cache-dir -r ${LAMBDA_TASK_ROOT}/requirements.txt
+
+COPY . ${LAMBDA_TASK_ROOT}/
+
+# main.handler = Mangum(app)
+CMD ["main.handler"]

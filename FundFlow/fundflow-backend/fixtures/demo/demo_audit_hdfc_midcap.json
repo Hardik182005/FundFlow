@@ -1,0 +1,107 @@
+{
+  "audit_id": "aud_demo_hdfc_midcap",
+  "scheme_code": "118989",
+  "fund_name": "HDFC Mid-Cap Opportunities Fund - Direct Plan - Growth",
+  "fund_type": "equity",
+  "generated_at": "2026-06-20T09:30:00+00:00",
+  "trust_score": 58.4,
+  "verdict": "REVIEW",
+  "verdict_explanation": "Overall trust score 58.4/100 (REVIEW). Execution gaps in: Manager Said vs Did. Areas to monitor: Style Drift.",
+  "is_demo": true,
+  "disclaimer": "This is an AI-assisted document and portfolio consistency audit, not investment advice. Verify source documents and consult a SEBI-registered investment adviser before making financial decisions.",
+  "checks": [
+    {
+      "check_id": "manager_said_vs_did",
+      "name": "Manager Said vs Did",
+      "status": "fail",
+      "score": 33.0,
+      "summary": "2 of 3 directional statements were not reflected in the portfolio.",
+      "explanation": "Each forward-looking portfolio-action statement is matched to observed sector movement between the previous and current factsheet.",
+      "findings": [
+        "Financials allocation increased from 28.0% to 33.5% despite an 'underweight' statement.",
+        "Consumer allocation fell from 14.0% to 13.0% despite an 'adding' statement."
+      ],
+      "evidence_ids": ["ev_commentary", "ev_factsheet_cur", "ev_factsheet_prev"],
+      "confidence": 0.7,
+      "methodology": "delta = current_weight - previous_weight; increase if delta >= +1.0 pp, decrease if delta <= -1.0 pp; score = consistent/evaluated * 100.",
+      "table": [
+        {"statement": "We remain underweight financials.", "direction": "underweight", "sector": "Financials", "previous_weight": 28.0, "current_weight": 33.5, "observed_movement": 5.5, "status": "mismatch"},
+        {"statement": "We are adding consumer discretionary.", "direction": "increase", "sector": "Consumer", "previous_weight": 14.0, "current_weight": 13.0, "observed_movement": -1.0, "status": "mismatch"},
+        {"statement": "We have trimmed information technology.", "direction": "decrease", "sector": "Information Technology", "previous_weight": 11.5, "current_weight": 9.8, "observed_movement": -1.7, "status": "consistent"}
+      ]
+    },
+    {
+      "check_id": "style_drift",
+      "name": "Style Drift",
+      "status": "warning",
+      "score": 60.0,
+      "summary": "Potential style drift relative to the stated mandate.",
+      "explanation": "Compares the scheme's stated market-cap floor against the classified market-cap exposure of current holdings.",
+      "findings": ["Mandate indicates a mid-cap focus; observed large-cap exposure is 22.0% (monitor)."],
+      "evidence_ids": ["ev_sid", "ev_factsheet_cur"],
+      "confidence": 0.6,
+      "methodology": "Sum holding weights per market-cap segment; flag where observed deviates from mandate by >1 pp.",
+      "observed": {"large": 22.0, "mid": 63.0, "small": 15.0},
+      "mandate": {"min_large": null, "min_mid": 65, "min_small": null}
+    },
+    {
+      "check_id": "manager_tenure",
+      "name": "Manager Continuity",
+      "status": "pass",
+      "score": 85.0,
+      "summary": "Stable manager continuity.",
+      "explanation": "Measures how long the current manager has run the fund relative to the advertised return period.",
+      "findings": ["Current manager tenure is 96 months, covering the full advertised five-year period."],
+      "evidence_ids": ["ev_profile"],
+      "confidence": 0.6,
+      "methodology": "tenure_months computed from disclosed manager_start_date; compared to advertised return periods.",
+      "tenure_months": 96
+    },
+    {
+      "check_id": "skin_in_game",
+      "name": "Skin in the Game",
+      "status": "insufficient_data",
+      "score": 0.0,
+      "summary": "No manager investment disclosure was found in the available documents.",
+      "explanation": "Reports the manager's own disclosed investment where available.",
+      "findings": [],
+      "evidence_ids": [],
+      "confidence": 0.0,
+      "methodology": "Marked insufficient_data; missing inputs are never converted into a pass or fail."
+    },
+    {
+      "check_id": "hidden_churn",
+      "name": "Churn Transparency",
+      "status": "pass",
+      "score": 70.0,
+      "summary": "Observed holdings-change estimate computed from portfolio overlap.",
+      "explanation": "Estimates portfolio change from the overlap between consecutive holdings snapshots.",
+      "findings": ["Observed holdings-change estimate (annualised): 34% based on portfolio overlap.", "Published portfolio turnover ratio: 29% (indicator only; not the same formula)."],
+      "evidence_ids": ["ev_factsheet_cur", "ev_factsheet_prev"],
+      "confidence": 0.4,
+      "methodology": "common = sum(min(cur,prev)); monthly_churn = 1 - common; annualised = min(monthly*12, cap). Observed estimate, NOT the official SEBI turnover formula.",
+      "annualized_observed_churn_pct": 34.0
+    }
+  ],
+  "evidence": [
+    {"id": "ev_commentary", "source_type": "manager_commentary", "title": "HDFC Mid-Cap Opportunities — Fund Manager Commentary", "url": "https://www.morningstar.in/mutualfunds/f00000pe16/hdfc-mid-cap-opportunities-fund--direct-plan-growth-option/fund-overview.aspx", "excerpt": "We remain underweight financials and are adding consumer discretionary while trimming information technology...", "reporting_period": "May 2026", "scraped_at": "2026-06-20T09:29:00+00:00", "anakin_job_id": "demo-job-001", "cached": true, "extraction_confidence": 0.72},
+    {"id": "ev_factsheet_cur", "source_type": "factsheet_current", "title": "HDFC Mid-Cap Opportunities — Factsheet (current)", "url": "https://www.morningstar.in/mutualfunds/f00000pe16/hdfc-mid-cap-opportunities-fund--direct-plan-growth-option/fund-factsheet.aspx", "excerpt": "Sector allocation: Financials 33.5%, Consumer 13.0%, IT 9.8%...", "reporting_period": "May 2026", "scraped_at": "2026-06-20T09:29:10+00:00", "anakin_job_id": "demo-job-002", "cached": true, "extraction_confidence": 0.7},
+    {"id": "ev_factsheet_prev", "source_type": "factsheet_previous", "title": "HDFC Mid-Cap Opportunities — Factsheet (previous)", "url": "https://www.morningstar.in/mutualfunds/f00000pe16/hdfc-mid-cap-opportunities-fund--direct-plan-growth-option/fund-factsheet.aspx", "excerpt": "Sector allocation: Financials 28.0%, Consumer 14.0%, IT 11.5%...", "reporting_period": "April 2026", "scraped_at": "2026-06-20T09:29:20+00:00", "anakin_job_id": "demo-job-003", "cached": true, "extraction_confidence": 0.7},
+    {"id": "ev_sid", "source_type": "sid", "title": "Scheme Information Document", "url": "https://www.morningstar.in/mutualfunds/f00000pe16/hdfc-mid-cap-opportunities-fund--direct-plan-growth-option/fund-overview.aspx", "excerpt": "The scheme invests predominantly in mid-cap companies...", "reporting_period": null, "scraped_at": "2026-06-20T09:29:30+00:00", "anakin_job_id": "demo-job-004", "cached": true, "extraction_confidence": 0.6},
+    {"id": "ev_profile", "source_type": "manager_profile", "title": "Fund Manager Profile", "url": "https://www.morningstar.in/mutualfunds/f00000pe16/hdfc-mid-cap-opportunities-fund--direct-plan-growth-option/fund-overview.aspx", "excerpt": "Managed by the current fund manager since June 2018...", "reporting_period": null, "scraped_at": "2026-06-20T09:29:40+00:00", "anakin_job_id": "demo-job-005", "cached": true, "extraction_confidence": 0.6},
+    {"id": "ev_wire", "source_type": "wire_reality", "title": "Anakin Wire: morningstar-in mutual fund portfolio", "url": "anakin-wire://act_morningstar_in_mutual_fund_portfolio_ssr", "excerpt": "Reality-layer holdings retrieved via Anakin Wire morningstar-in portfolio action.", "reporting_period": "May 2026", "scraped_at": "2026-06-20T09:29:50+00:00", "anakin_job_id": "demo-wire-001", "cached": false, "extraction_confidence": 0.75}
+  ],
+  "manager_claims": [
+    {"asset_or_sector": "Financials", "direction": "underweight", "quoted_text": "We remain underweight financials.", "normalized_claim": "Reduce/hold low financials exposure", "confidence": 0.8, "source_evidence_id": "ev_commentary"},
+    {"asset_or_sector": "Consumer", "direction": "increase", "quoted_text": "We are adding consumer discretionary.", "normalized_claim": "Increase consumer exposure", "confidence": 0.8, "source_evidence_id": "ev_commentary"},
+    {"asset_or_sector": "Information Technology", "direction": "decrease", "quoted_text": "We have trimmed information technology.", "normalized_claim": "Reduce IT exposure", "confidence": 0.8, "source_evidence_id": "ev_commentary"}
+  ],
+  "allocation_diff": [
+    {"name": "Financials", "current_weight": 33.5, "previous_weight": 28.0, "delta_percentage_points": 5.5, "classification": "sector", "source_evidence_ids": ["ev_factsheet_cur", "ev_factsheet_prev"]},
+    {"name": "Consumer", "current_weight": 13.0, "previous_weight": 14.0, "delta_percentage_points": -1.0, "classification": "sector", "source_evidence_ids": ["ev_factsheet_cur", "ev_factsheet_prev"]},
+    {"name": "Information Technology", "current_weight": 9.8, "previous_weight": 11.5, "delta_percentage_points": -1.7, "classification": "sector", "source_evidence_ids": ["ev_factsheet_cur", "ev_factsheet_prev"]}
+  ],
+  "anakin_usage": {"scraper_calls": 5, "wire_calls": 1, "search_calls": 0, "fresh_calls": 0, "cache_hits": 5, "estimated_credits": 0, "job_ids": ["demo-job-001", "demo-job-002", "demo-job-003", "demo-job-004", "demo-job-005", "demo-wire-001"]},
+  "wire_reality": {"action_id": "act_morningstar_in_mutual_fund_portfolio_ssr", "catalog": "morningstar-in"},
+  "limitations": ["Demo audit generated from cached source documents.", "Numbers shown are illustrative cached values for demonstration."]
+}
