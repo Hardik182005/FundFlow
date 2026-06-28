@@ -20,8 +20,18 @@ _seeded = False
 
 
 def _get_db():
-    """No external DB. Services treat None as 'use in-memory fallback'."""
-    return None
+    """S3-backed persistence when AUDIT_S3_BUCKET is set; else None (in-memory).
+
+    Returning an S3 client lets audit results, the Anakin scrape cache, and the
+    idempotency keys survive across Lambda invocations — so a repeated audit of a
+    warmed fund returns instantly (well within the API Gateway 30s window).
+    """
+    try:
+        from services.s3_store import get_db
+        return get_db()
+    except Exception as e:
+        logger.warning(f"S3 store unavailable, using in-memory: {e}")
+        return None
 
 
 def _seed_demo() -> None:

@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import GoogleTranslate from '@/components/GoogleTranslate'
 
 export const metadata: Metadata = {
-  title: 'FundFlow — Your funds. Real NAV. Zero noise.',
-  description: 'Track your MFU mutual fund portfolio with real-time AMFI NAV data and AI-powered analysis.',
+  title: 'FundFlow — Track your funds. Trust your funds.',
+  description: 'AI-powered mutual-fund manager-accountability audits — powered by Anakin Universal Scraper + Wire.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -11,6 +12,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="bg-[#F7F8FA] min-h-screen">
         {children}
+        <GoogleTranslate />
       </body>
     </html>
   )

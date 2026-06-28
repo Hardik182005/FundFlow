@@ -2,9 +2,7 @@
 import { useEffect, useState } from 'react'
 import { Search, X, TrendingUp, TrendingDown } from 'lucide-react'
 import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
-import VoiceAgent from '@/components/VoiceAgent'
+import AppShell from '@/components/app/AppShell'
 import VerdictBadge from '@/components/VerdictBadge'
 import { formatNAV } from '@/lib/utils'
 import { getNav, getNavHistory, analyzeFund } from '@/lib/api'
@@ -202,9 +200,8 @@ export default function ExplorePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
-      <Navbar />
-      <main className="pt-24 pb-16 px-6 max-w-7xl mx-auto">
+    <AppShell title="Explore Funds">
+      <main className="pb-8">
         {/* Hero search */}
         <div className="text-center mb-12">
           <h1 className="text-4xl lg:text-5xl font-extrabold text-[#0A0A0A] mb-3">Explore Mutual Funds</h1>
@@ -489,9 +486,6 @@ export default function ExplorePage() {
           </div>
         </div>
       )}
-
-      <Footer />
-      <VoiceAgent />
-    </div>
+    </AppShell>
   )
 }

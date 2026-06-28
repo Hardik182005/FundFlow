@@ -161,6 +161,15 @@ async def run_audit(req) -> Dict[str, Any]:
     user_id = req.user_id
     scheme_code = req.scheme_code
 
+    # Demo mode: for supported funds, return the rich evidence-linked demo audit
+    # (full Anakin Scraper + Wire pipeline showcase) unless a live refresh is forced.
+    from services import demo_service
+    if demo_service.enabled() and not req.force_refresh and demo_service.is_supported(scheme_code):
+        demo = demo_service.build_demo_audit(scheme_code)
+        if demo:
+            _save_audit(demo, user_id)
+            return demo
+
     # idempotency: same user+scheme+sources within budget guard
     idem_key = hashlib.sha256(f"{user_id}:{scheme_code}:{req.audit_type}:{req.force_refresh}".encode()).hexdigest()[:24]
     if not req.force_refresh:

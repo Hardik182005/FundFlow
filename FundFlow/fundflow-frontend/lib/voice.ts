@@ -37,8 +37,8 @@ export function speakWithBrowser(text: string) {
   window.speechSynthesis.speak(utter)
 }
 
-/** Play an MP3 audio Blob; resolves when playback starts, rejects on error. */
-function playBlob(blob: Blob): Promise<void> {
+/** Play an MP3 audio Blob; stops any currently-playing voice first (no overlap). */
+export function playAudioBlob(blob: Blob): Promise<void> {
   stopVoice()
   const url = URL.createObjectURL(blob)
   const audio = new Audio(url)
@@ -46,6 +46,8 @@ function playBlob(blob: Blob): Promise<void> {
   audio.onended = () => URL.revokeObjectURL(url)
   return audio.play()
 }
+
+const playBlob = playAudioBlob
 
 /**
  * Narrate a fund's analysis out loud. Tries the ElevenLabs "nice voice" first,

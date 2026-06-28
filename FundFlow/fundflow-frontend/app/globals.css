@@ -34,6 +34,15 @@ h1, h2, h3, .font-display { font-family: 'Space Grotesk', system-ui, sans-serif;
   .ff-input { @apply w-full rounded-xl border border-cardBorder bg-white px-3.5 py-2.5 text-sm outline-none focus:border-black/40 focus:ring-2 focus:ring-black/5; }
 }
 
+/* Google Translate: hide injected banner + stop body shift; style the picker */
+.goog-te-banner-frame, .skiptranslate iframe { display: none !important; }
+body { top: 0 !important; }
+#goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+#google_translate_element .goog-te-gadget { font-size: 0; color: transparent; line-height: 1; }
+#google_translate_element .goog-te-gadget .goog-te-combo {
+  font-size: 12px; color: #0B0D12; border: none; background: transparent; padding: 2px 4px; cursor: pointer; margin: 0;
+}
+
 /* Ticker animation */
 .ticker-track {
   display: flex;

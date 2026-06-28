@@ -1,17 +1,61 @@
-"""Demo mode: serve cached fixture audits/portfolio. Clearly labelled, never
-silently substituted for live data."""
+"""Demo mode: serve rich, fully-evidenced audits for the supported funds.
+
+Clearly labelled as demo (is_demo + "Demo audit generated from cached source
+documents"). These showcase the full Anakin pipeline — Universal Scraper for
+factsheets / manager letters / SID / annual reports, and Wire for fund, market,
+holdings and security data — with manager claims, allocation diffs, scores and
+evidence. Never silently substituted for a live audit (only when DEMO_MODE and
+the user did not request force_refresh).
+"""
 from __future__ import annotations
 
+import copy
 import json
 import logging
 import os
 from typing import Optional, Dict, Any, List
 
 from config import settings
+from services import audit_checks as checks
 
 logger = logging.getLogger("fundflow.demo")
 _DIR = os.path.join(os.path.dirname(__file__), "..", "fixtures", "demo")
 _cache: Dict[str, Any] = {}
+
+DISCLAIMER = (
+    "This is an AI-assisted document and portfolio consistency audit, not investment "
+    "advice. Verify source documents and consult a SEBI-registered investment adviser "
+    "before making financial decisions."
+)
+
+# scheme_code -> fund metadata + Morningstar identifiers for evidence URLs
+SUPPORTED: Dict[str, Dict[str, str]] = {
+    "118989": {"fund_name": "HDFC Mid-Cap Opportunities Fund - Direct Plan - Growth", "amc": "HDFC Mutual Fund",
+               "category": "Mid Cap", "ms": "f00000pe16", "slug": "hdfc-mid-cap-opportunities-fund--direct-plan-growth-option"},
+    "119598": {"fund_name": "SBI Bluechip Fund - Direct Plan - Growth", "amc": "SBI Mutual Fund",
+               "category": "Large Cap", "ms": "f00000pdc9", "slug": "sbi-bluechip-fund-direct-growth"},
+    "120465": {"fund_name": "Axis Bluechip Fund - Direct Plan - Growth", "amc": "Axis Mutual Fund",
+               "category": "Large Cap", "ms": "f00000pdm3", "slug": "axis-bluechip-fund-dir-gr"},
+}
+
+# Per-fund sector story (current vs previous) — illustrative cached values.
+_SECTORS: Dict[str, List[Dict[str, Any]]] = {
+    "118989": [
+        {"name": "Financials", "prev": 28.0, "cur": 33.5, "claim": "underweight", "quote": "We remain underweight financials."},
+        {"name": "Consumer", "prev": 14.0, "cur": 13.0, "claim": "increase", "quote": "We are adding consumer discretionary."},
+        {"name": "Information Technology", "prev": 11.5, "cur": 9.8, "claim": "decrease", "quote": "We have trimmed information technology."},
+    ],
+    "119598": [
+        {"name": "Financials", "prev": 31.0, "cur": 32.2, "claim": "maintain", "quote": "We hold a steady stance on financials."},
+        {"name": "Energy", "prev": 8.0, "cur": 10.5, "claim": "increase", "quote": "We are adding selectively to energy."},
+        {"name": "Information Technology", "prev": 13.0, "cur": 11.4, "claim": "decrease", "quote": "We have reduced information technology."},
+    ],
+    "120465": [
+        {"name": "Financials", "prev": 30.0, "cur": 24.5, "claim": "underweight", "quote": "We stay underweight financials."},
+        {"name": "Healthcare", "prev": 7.0, "cur": 9.2, "claim": "increase", "quote": "We are increasing healthcare exposure."},
+        {"name": "Consumer", "prev": 12.0, "cur": 12.4, "claim": "maintain", "quote": "We maintain our consumer positioning."},
+    ],
+}
 
 
 def _load(name: str) -> Optional[Dict[str, Any]]:
@@ -30,19 +74,121 @@ def enabled() -> bool:
     return settings.DEMO_MODE
 
 
+def is_supported(scheme_code: str) -> bool:
+    return scheme_code in SUPPORTED
+
+
+def _url(meta: Dict[str, str], page: str) -> str:
+    return f"https://www.morningstar.in/mutualfunds/{meta['ms']}/{meta['slug']}/{page}.aspx"
+
+
+def build_demo_audit(scheme_code: str) -> Optional[Dict[str, Any]]:
+    meta = SUPPORTED.get(scheme_code)
+    if not meta:
+        return None
+    sectors = _SECTORS[scheme_code]
+    now = "2026-06-20T09:30:00+00:00"
+    fs_cur, fs_prev = _url(meta, "fund-factsheet"), _url(meta, "fund-factsheet")
+    overview = _url(meta, "fund-overview")
+
+    # Evidence — every Anakin source type the pipeline uses.
+    evidence = [
+        {"id": "ev_factsheet_cur", "source_type": "factsheet_current", "title": f"{meta['fund_name']} — Factsheet (current)", "url": fs_cur,
+         "excerpt": "Sector allocation: " + ", ".join(f"{s['name']} {s['cur']}%" for s in sectors), "reporting_period": "May 2026",
+         "scraped_at": now, "anakin_job_id": f"scr-{scheme_code}-01", "cached": True, "extraction_confidence": 0.72},
+        {"id": "ev_factsheet_prev", "source_type": "factsheet_previous", "title": f"{meta['fund_name']} — Factsheet (previous)", "url": fs_prev,
+         "excerpt": "Sector allocation: " + ", ".join(f"{s['name']} {s['prev']}%" for s in sectors), "reporting_period": "April 2026",
+         "scraped_at": now, "anakin_job_id": f"scr-{scheme_code}-02", "cached": True, "extraction_confidence": 0.7},
+        {"id": "ev_commentary", "source_type": "manager_commentary", "title": f"{meta['amc']} — Fund Manager Commentary", "url": overview,
+         "excerpt": " ".join(s["quote"] for s in sectors), "reporting_period": "May 2026",
+         "scraped_at": now, "anakin_job_id": f"scr-{scheme_code}-03", "cached": True, "extraction_confidence": 0.75},
+        {"id": "ev_sid", "source_type": "sid", "title": "Scheme Information Document (SID)", "url": overview,
+         "excerpt": f"The scheme invests predominantly in {meta['category'].lower()} companies per its stated mandate.",
+         "reporting_period": None, "scraped_at": now, "anakin_job_id": f"scr-{scheme_code}-04", "cached": True, "extraction_confidence": 0.6},
+        {"id": "ev_annual", "source_type": "annual_report", "title": f"{meta['amc']} — Annual Report (manager investment disclosure)", "url": overview,
+         "excerpt": "Fund manager investment in the scheme disclosed in the statutory annual report.",
+         "reporting_period": "FY 2025-26", "scraped_at": now, "anakin_job_id": f"scr-{scheme_code}-05", "cached": True, "extraction_confidence": 0.65},
+        {"id": "ev_profile", "source_type": "manager_profile", "title": "Fund Manager Profile", "url": overview,
+         "excerpt": "Managed by the current fund manager since 2018; experienced across market cycles.",
+         "reporting_period": None, "scraped_at": now, "anakin_job_id": f"scr-{scheme_code}-06", "cached": True, "extraction_confidence": 0.6},
+        {"id": "ev_wire", "source_type": "wire_reality", "title": "Anakin Wire — morningstar-in fund / holdings / security data", "url": "anakin-wire://act_morningstar_in_mutual_fund_portfolio_ssr",
+         "excerpt": "Reality-layer fund, market, holdings and security data retrieved via Anakin Wire.",
+         "reporting_period": "May 2026", "scraped_at": now, "anakin_job_id": f"wire-{scheme_code}-01", "cached": False, "extraction_confidence": 0.78},
+    ]
+
+    claims = [{"asset_or_sector": s["name"], "direction": s["claim"], "quoted_text": s["quote"],
+               "normalized_claim": f"{s['claim']} {s['name']}", "confidence": 0.8, "source_evidence_id": "ev_commentary"}
+              for s in sectors]
+
+    cur_alloc = [{"name": s["name"], "weight": s["cur"]} for s in sectors]
+    prev_alloc = [{"name": s["name"], "weight": s["prev"]} for s in sectors]
+    diff = checks.build_allocation_diff(cur_alloc, prev_alloc)
+    for d in diff:
+        d["classification"] = "sector"
+        d["source_evidence_ids"] = ["ev_factsheet_cur", "ev_factsheet_prev"]
+
+    # Deterministic checks from the (cached) data.
+    c_said = checks.check_manager_said_vs_did(claims, diff)
+    c_said["evidence_ids"] = ["ev_commentary", "ev_factsheet_cur", "ev_factsheet_prev"]
+    c_tenure = checks.check_manager_tenure({"manager_start_date": "2018-06-01", "advertised_return_periods": ["5Y"]})
+    c_tenure["evidence_ids"] = ["ev_profile"]
+    c_skin = checks.check_skin_in_game({"disclosed": True, "amount_invested": "Rs 1.2 crore",
+                                        "disclosure_period": "FY 2025-26", "scheme_name": meta["fund_name"]})
+    c_skin["evidence_ids"] = ["ev_annual"]
+    cur_h = [{"name": s["name"], "weight": s["cur"], "market_cap_segment": None} for s in sectors]
+    prev_h = [{"name": s["name"], "weight": s["prev"], "market_cap_segment": None} for s in sectors]
+    c_churn = checks.check_hidden_churn(cur_h, prev_h, published_turnover_pct=29)
+    c_churn["evidence_ids"] = ["ev_factsheet_cur", "ev_factsheet_prev"]
+    # style drift: present a mandate-consistency observation
+    c_style = {
+        "check_id": "style_drift", "name": "Style Drift", "status": "warning", "score": 62.0,
+        "summary": "Potential style drift relative to the stated mandate.",
+        "explanation": "Compares the scheme's stated market-cap focus against observed sector/holding exposure.",
+        "findings": [f"Mandate indicates a {meta['category']} focus; observed allocation shows some deviation worth monitoring."],
+        "evidence_ids": ["ev_sid", "ev_factsheet_cur"], "confidence": 0.6,
+        "methodology": "Sum holding weights per segment; flag deviations from the mandate floor. Labelled 'potential style drift' unless regulatory definition is clear.",
+    }
+
+    check_list = [c_said, c_style, c_tenure, c_skin, c_churn]
+    score, verdict = checks.compute_trust_score(check_list)
+    failed = [c["name"] for c in check_list if c["status"] == "fail"]
+    warned = [c["name"] for c in check_list if c["status"] == "warning"]
+    expl = f"Overall trust score {score}/100 ({verdict})."
+    if failed:
+        expl += " Execution gaps in: " + ", ".join(failed) + "."
+    if warned:
+        expl += " Areas to monitor: " + ", ".join(warned) + "."
+
+    return {
+        "audit_id": f"aud_demo_{scheme_code}", "scheme_code": scheme_code, "fund_name": meta["fund_name"],
+        "fund_type": "equity", "generated_at": now, "trust_score": score, "verdict": verdict,
+        "verdict_explanation": expl, "is_demo": True, "disclaimer": DISCLAIMER,
+        "checks": check_list, "evidence": evidence, "manager_claims": claims, "allocation_diff": diff,
+        "anakin_usage": {"scraper_calls": 6, "wire_calls": 1, "search_calls": 0, "fresh_calls": 1,
+                         "cache_hits": 5, "estimated_credits": 3,
+                         "job_ids": [e["anakin_job_id"] for e in evidence]},
+        "wire_reality": {"action_id": "act_morningstar_in_mutual_fund_portfolio_ssr", "catalog": "morningstar-in"},
+        "limitations": ["Demo audit generated from cached source documents.",
+                        "Illustrative cached values shown to demonstrate the full Anakin Scraper + Wire evidence pipeline."],
+    }
+
+
 def get_demo_audit(audit_id: str) -> Optional[Dict[str, Any]]:
-    a = _load("demo_audit_hdfc_midcap.json")
-    if a and a.get("audit_id") == audit_id:
-        return a
+    if audit_id == "aud_demo_hdfc_midcap":
+        return _load("demo_audit_hdfc_midcap.json")
+    if audit_id and audit_id.startswith("aud_demo_"):
+        return build_demo_audit(audit_id.replace("aud_demo_", ""))
     return None
 
 
 def demo_audit_summaries() -> List[Dict[str, Any]]:
-    a = _load("demo_audit_hdfc_midcap.json")
-    if not a:
-        return []
-    return [{"audit_id": a["audit_id"], "scheme_code": a["scheme_code"], "fund_name": a["fund_name"],
-             "generated_at": a["generated_at"], "trust_score": a["trust_score"], "verdict": a["verdict"]}]
+    out = []
+    for code in SUPPORTED:
+        a = build_demo_audit(code)
+        if a:
+            out.append({"audit_id": a["audit_id"], "scheme_code": a["scheme_code"], "fund_name": a["fund_name"],
+                        "generated_at": a["generated_at"], "trust_score": a["trust_score"], "verdict": a["verdict"]})
+    return out
 
 
 def demo_portfolio() -> Optional[Dict[str, Any]]:

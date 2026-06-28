@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import AppShell from '@/components/app/AppShell'
 import StatusBadge, { verdictColor, verdictAction } from '@/components/app/StatusBadge'
 import { getFundAudit, downloadAuditReport, getAuditNarration } from '@/lib/api'
+import { playAudioBlob, stopVoice, speakWithBrowser } from '@/lib/voice'
 import type { FundAuditResult, AuditCheckResult } from '@/lib/types'
 import { Volume2, Download, FileSearch, Loader2, ChevronDown } from 'lucide-react'
 
@@ -32,15 +33,15 @@ function AuditResultInner() {
 
   async function narrate() {
     if (!audit) return
+    // second click while speaking = stop (toggle), never overlap
+    if (narrating) { stopVoice(); setNarrating(false); return }
     setNarrating(true)
     try {
       const blob = await getAuditNarration(audit.audit_id)
-      const audio = new Audio(URL.createObjectURL(blob))
-      audio.play()
+      await playAudioBlob(blob)
     } catch {
-      // browser speech-synthesis fallback
-      const u = new SpeechSynthesisUtterance(audit.verdict_explanation)
-      speechSynthesis.speak(u)
+      stopVoice()
+      speakWithBrowser(audit.verdict_explanation)
     } finally {
       setNarrating(false)
     }

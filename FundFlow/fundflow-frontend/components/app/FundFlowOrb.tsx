@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { Mic, MicOff, X, Loader2, AlertCircle, Send, MessageSquare, AudioLines } from 'lucide-react'
 import { ConversationProvider, useConversation } from '@elevenlabs/react'
 import { sendAssistantMessage, getSpeech } from '@/lib/api'
+import { playAudioBlob, stopVoice, speakWithBrowser } from '@/lib/voice'
 
 const AGENT_ID = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID
 const AGENT_CONFIGURED = Boolean(AGENT_ID && AGENT_ID !== 'your_elevenlabs_agent_id_here')
@@ -93,9 +94,10 @@ function ChatPanel({ auditId, pathname }: { auditId?: string; pathname: string |
   async function speak(text: string) {
     try {
       const blob = await getSpeech(text)
-      new Audio(URL.createObjectURL(blob)).play()
+      await playAudioBlob(blob)   // stops any current playback first — no overlap
     } catch {
-      speechSynthesis.speak(new SpeechSynthesisUtterance(text))
+      stopVoice()
+      speakWithBrowser(text)
     }
   }
 
